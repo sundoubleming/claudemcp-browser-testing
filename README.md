@@ -337,7 +337,45 @@ evaluate_js({
     return Array.from(elements).map(el => el.textContent);
   `
 })
+
+// 点击按钮
+evaluate_js({
+  expression: "document.querySelector('#submit-btn').click()"
+})
+
+// 填写表单
+evaluate_js({
+  expression: `
+    document.querySelector('#username').value = 'testuser';
+    document.querySelector('#password').value = 'password123';
+    document.querySelector('#login-form').submit();
+  `
+})
+
+// 等待元素并获取内容
+evaluate_js({
+  expression: `
+    // 点击按钮
+    document.querySelector('#load-data').click();
+
+    // 等待数据加载
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // 返回结果
+    return document.querySelector('.data-container').innerHTML;
+  `
+})
 ```
+
+**支持的网页交互操作：**
+- ✅ 点击元素（按钮、链接等）
+- ✅ 填写表单字段
+- ✅ 选择下拉菜单
+- ✅ 勾选复选框/单选框
+- ✅ 触发事件（click, change, submit 等）
+- ✅ 滚动页面
+- ✅ 获取/修改元素内容
+- ✅ 等待异步操作完成
 
 ## 工作流程示例
 
@@ -420,7 +458,42 @@ evaluate_js({
 })
 ```
 
-### 4. 完整的测试流程
+### 4. 网页交互和自动化
+
+**提示词：**
+```
+帮我在浏览器中完成以下操作：
+1. 在用户名输入框中填入 "admin"
+2. 在密码输入框中填入 "password123"
+3. 点击登录按钮
+4. 等待 2 秒后获取页面标题
+```
+
+**对应的工具调用：**
+```javascript
+// 1. 连接浏览器
+connect_browser({ host: "localhost", port: 9222 })
+
+// 2. 执行登录操作
+evaluate_js({
+  expression: `
+    // 填写表单
+    document.querySelector('#username').value = 'admin';
+    document.querySelector('#password').value = 'password123';
+
+    // 点击登录按钮
+    document.querySelector('#login-btn').click();
+
+    // 等待页面跳转
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // 返回新页面标题
+    return document.title;
+  `
+})
+```
+
+### 5. 完整的测试流程
 
 **提示词：**
 ```
