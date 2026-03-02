@@ -6,7 +6,7 @@ export const downloadAndInspectSchema = {
   method: z.enum(['GET', 'POST']).describe('HTTP method'),
   path: z.string().describe('API path for the download endpoint'),
   body: z.record(z.any()).optional().describe('Request body for POST requests'),
-  auto_auth: z.boolean().default(true).describe('Automatically inject Authorization header'),
+  headers: z.record(z.string()).optional().describe('Additional HTTP headers'),
   expected_format: z.enum(['csv', 'xlsx', 'json', 'text']).optional().describe('Expected file format (helps with parsing)'),
 };
 
@@ -14,34 +14,25 @@ export async function handleDownloadAndInspect(args: {
   method: string;
   path: string;
   body?: Record<string, any>;
-  auto_auth: boolean;
+  headers?: Record<string, string>;
   expected_format?: string;
 }): Promise<string> {
   // Safely serialize all user inputs to prevent JS injection
   const safeMethod = JSON.stringify(args.method);
   const safePath = JSON.stringify(args.path);
   const safeBody = JSON.stringify(args.body ?? null);
+  const safeHeaders = JSON.stringify(args.headers || {});
   const safeExpectedFormat = JSON.stringify(args.expected_format || '');
-  const autoAuth = args.auto_auth;
 
   const js = `
 (async function() {
   const method = ${safeMethod};
   const path = ${safePath};
   const bodyParam = ${safeBody};
+  const extraHeaders = ${safeHeaders};
   const expectedFormat = ${safeExpectedFormat};
-  const autoAuth = ${autoAuth};
 
-  const headers = {};
-
-  let _authInjected = false;
-  if (autoAuth) {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      headers['Authorization'] = 'Bearer ' + token;
-      _authInjected = true;
-    }
-  }
+  const headers = Object.assign({}, extraHeaders);
 
   const fetchOptions = {
     method: method,
@@ -106,7 +97,6 @@ export async function handleDownloadAndInspect(args: {
       content_type: ct,
       size: bytes.length,
       data_base64: base64,
-      auth_injected: _authInjected,
     });
   } catch (err) {
     return JSON.stringify({
@@ -125,12 +115,6 @@ export async function handleDownloadAndInspect(args: {
       return JSON.stringify(result, null, 2);
     }
 
-    const authWarning =
-      args.auto_auth && !result.auth_injected
-        ? 'No access_token found in localStorage. Please login in the browser first.'
-        : undefined;
-    delete result.auth_injected;
-
     const fileBuffer = Buffer.from(result.data_base64, 'base64');
     const fileInfo = parseFileContent(
       fileBuffer,
@@ -139,12 +123,7 @@ export async function handleDownloadAndInspect(args: {
       args.expected_format
     );
 
-    const response: Record<string, any> = { success: true, ...fileInfo };
-    if (authWarning) {
-      response.auth_warning = authWarning;
-    }
-
-    return JSON.stringify(response, null, 2);
+    return JSON.stringify({ success: true, ...fileInfo }, null, 2);
   } catch (error: any) {
     return JSON.stringify({ success: false, error: error.message }, null, 2);
   }

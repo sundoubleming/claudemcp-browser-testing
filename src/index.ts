@@ -22,7 +22,7 @@ server.tool(
 
 server.tool(
   'execute_api_call',
-  'Execute an API call in the browser context. Automatically injects Authorization header from localStorage. Uses the page origin as base URL.',
+  'Execute an API call in the browser context. Uses the page origin as base URL.',
   executeApiCallSchema,
   async (args) => ({
     content: [{ type: 'text', text: await handleExecuteApiCall(args) }],
@@ -31,7 +31,7 @@ server.tool(
 
 server.tool(
   'get_page_context',
-  'Get current browser page info: URL, title, auth token status, cookies. Use to check if the session is still valid.',
+  'Get current browser page info: URL, title, cookies.',
   {},
   async () => ({
     content: [{ type: 'text', text: await handleGetPageContext() }],

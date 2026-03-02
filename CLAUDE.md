@@ -37,22 +37,15 @@ npm start
 
 **Tool Implementations (`src/tools/`)**
 - `connect.ts` - Establish CDP connection to Chrome (must be called first)
-- `api-call.ts` - Execute HTTP requests with auto-injected auth from localStorage
-- `page-context.ts` - Retrieve current page URL, title, cookies, auth status
+- `api-call.ts` - Execute HTTP requests in browser context
+- `page-context.ts` - Retrieve current page URL, title, cookies
 - `download.ts` - Download and parse files (CSV, JSON, XLSX)
 - `evaluate.ts` - Execute arbitrary JavaScript in browser context
 
 **Utilities (`src/utils/`)**
-- `auth-helper.ts` - Extract JWT tokens from localStorage, decode expiration
 - `file-parser.ts` - Parse CSV, JSON, XLSX files with preview and structure info
 
 ### Key Design Patterns
-
-**Authentication Flow**
-- Tokens stored in browser's localStorage (`access_token`, `refresh_token`)
-- `execute_api_call` auto-injects `Authorization: Bearer <token>` header
-- JWT expiration decoded from token payload
-- 401 responses trigger auth warnings
 
 **Connection State**
 - Connection persists across tool calls

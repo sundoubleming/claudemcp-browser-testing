@@ -5,9 +5,8 @@
 ## 功能特性
 
 - 🌐 **浏览器连接** - 连接到远程 Chrome/Edge 浏览器实例
-- 🔐 **自动认证** - 自动从 localStorage 注入 JWT token
 - 📡 **API 调用** - 在浏览器上下文中执行 HTTP 请求
-- 📄 **页面检查** - 获取当前页面 URL、标题、cookies 和认证状态
+- 📄 **页面检查** - 获取当前页面 URL、标题、cookies
 - 📥 **文件下载** - 下载并解析 CSV、JSON、XLSX 文件
 - 💻 **JavaScript 执行** - 在浏览器中执行任意 JavaScript 代码
 
@@ -212,7 +211,7 @@ ssh -L 9222:localhost:9222 user@remote-host
 
 **检查页面状态：**
 ```
-查看当前浏览器页面的信息和认证状态
+查看当前浏览器页面的信息
 ```
 
 **下载和检查文件：**
@@ -251,14 +250,13 @@ connect_browser({
 
 #### 2. `execute_api_call`
 
-在浏览器上下文中执行 API 调用，自动注入认证 token。
+在浏览器上下文中执行 API 调用。
 
 **参数：**
 - `method` (string) - HTTP 方法：GET, POST, PUT, DELETE, PATCH
 - `path` (string) - API 路径，例如 "/api/tenant/list"
 - `headers` (object, 可选) - 额外的 HTTP 头
 - `body` (object|string, 可选) - 请求体
-- `auto_auth` (boolean) - 自动注入 Authorization 头，默认 true
 
 **示例：**
 ```javascript
@@ -283,7 +281,6 @@ execute_api_call({
 **返回：**
 - 当前页面 URL
 - 页面标题
-- 认证 token 状态
 - Cookies
 
 **示例：**
@@ -301,7 +298,6 @@ get_page_context()
 - `headers` (object, 可选) - HTTP 头
 - `body` (object|string, 可选) - 请求体
 - `expected_format` (string, 可选) - 预期格式：csv, json, xlsx
-- `auto_auth` (boolean) - 自动注入认证，默认 true
 
 **支持格式：**
 - CSV - 返回列名、行数、示例行
@@ -385,9 +381,8 @@ evaluate_js({
 ```
 请帮我完成以下测试：
 1. 连接到本地浏览器（端口 9222）
-2. 检查当前页面的认证状态
+2. 检查当前页面状态
 3. 测试 GET /api/users 接口
-4. 如果返回 401，提醒我需要重新登录
 ```
 
 **对应的工具调用：**
@@ -499,28 +494,13 @@ evaluate_js({
 ```
 我需要测试用户管理功能：
 1. 连接到 192.168.1.100:9222 的浏览器
-2. 确认已登录（检查 access_token）
-3. 获取用户列表（GET /api/users）
-4. 创建新用户（POST /api/users，名字是 "测试用户"，邮箱是 "test@example.com"）
-5. 验证新用户是否创建成功
-6. 导出用户列表为 CSV（GET /api/users/export）并检查内容
+2. 获取用户列表（GET /api/users）
+3. 创建新用户（POST /api/users，名字是 "测试用户"，邮箱是 "test@example.com"）
+4. 验证新用户是否创建成功
+5. 导出用户列表为 CSV（GET /api/users/export）并检查内容
 ```
 
 Claude 会自动按顺序调用相应的工具，并在每一步给出反馈。
-
-## 认证机制
-
-MCP 服务器会自动从浏览器的 `localStorage` 中读取认证 token：
-
-- `access_token` - JWT 访问令牌
-- `refresh_token` - 刷新令牌
-
-当 `auto_auth: true` 时，会自动在请求头中添加：
-```
-Authorization: Bearer <access_token>
-```
-
-如果收到 401 响应，会提示用户重新登录。
 
 ## 故障排查
 
@@ -537,17 +517,6 @@ Authorization: Bearer <access_token>
 
 4. **查看详细错误信息**
    - `connect_browser` 工具会返回详细的故障排查指导
-
-### 认证失败
-
-1. **确保已登录**
-   - 在浏览器中先登录应用，确保 `localStorage` 中有 `access_token`
-
-2. **检查 token 是否过期**
-   - 使用 `get_page_context` 查看 token 过期时间
-
-3. **手动设置认证头**
-   - 如果自动认证不工作，可以手动传递 `headers` 参数
 
 ## 技术架构
 
