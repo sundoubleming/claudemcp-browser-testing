@@ -55,7 +55,94 @@ google-chrome --remote-debugging-port=9222
 msedge.exe --remote-debugging-port=9222
 ```
 
-### 2. 配置 Claude Desktop
+### 2. 环境变量配置
+
+可以通过环境变量设置默认的浏览器连接参数，避免每次都需要手动指定。
+
+**支持的环境变量：**
+
+| 环境变量 | 说明 | 默认值 |
+|---------|------|--------|
+| `BROWSER_TESTING_HOST` | 浏览器所在主机的 IP 地址或域名 | `localhost` |
+| `BROWSER_TESTING_PORT` | Chrome 远程调试端口 | `9222` |
+
+**配置方式：**
+
+**在 Claude Desktop 配置中设置：**
+
+```json
+{
+  "mcpServers": {
+    "browser-testing": {
+      "command": "node",
+      "args": ["/path/to/claudemcp-browser-testing/dist/index.js"],
+      "env": {
+        "BROWSER_TESTING_HOST": "192.168.1.100",
+        "BROWSER_TESTING_PORT": "9222"
+      }
+    }
+  }
+}
+```
+
+**在 Claude Code CLI 配置中设置：**
+
+```json
+{
+  "mcpServers": {
+    "browser-testing": {
+      "command": "node",
+      "args": ["./dist/index.js"],
+      "env": {
+        "BROWSER_TESTING_HOST": "localhost",
+        "BROWSER_TESTING_PORT": "9222"
+      }
+    }
+  }
+}
+```
+
+**在 .mcp.json 项目配置中设置：**
+
+```json
+{
+  "mcpServers": {
+    "browser-testing": {
+      "command": "npx",
+      "args": ["-y", "tsx", "./src/index.ts"],
+      "env": {
+        "BROWSER_TESTING_HOST": "localhost",
+        "BROWSER_TESTING_PORT": "9222"
+      }
+    }
+  }
+}
+```
+
+**使用系统环境变量（开发模式）：**
+
+```bash
+# Linux/macOS
+export BROWSER_TESTING_HOST=192.168.1.100
+export BROWSER_TESTING_PORT=9222
+npm run dev
+
+# Windows (PowerShell)
+$env:BROWSER_TESTING_HOST="192.168.1.100"
+$env:BROWSER_TESTING_PORT="9222"
+npm run dev
+
+# Windows (CMD)
+set BROWSER_TESTING_HOST=192.168.1.100
+set BROWSER_TESTING_PORT=9222
+npm run dev
+```
+
+**注意：**
+- 如果在 `connect_browser` 工具中显式指定了 `host` 和 `port` 参数，会优先使用这些参数值
+- 环境变量主要用于设置默认值，方便在不传参数时自动连接到指定的浏览器
+
+### 3. 配置 Claude Desktop
 
 在 Claude Desktop 的配置文件中添加此 MCP 服务器：
 
@@ -89,7 +176,7 @@ msedge.exe --remote-debugging-port=9222
 }
 ```
 
-### 3. 配置 Claude Code CLI
+### 4. 配置 Claude Code CLI
 
 在 Claude Code CLI 的配置文件中添加此 MCP 服务器：
 
@@ -165,7 +252,7 @@ claude
 > 帮我测试 /api/users 接口
 ```
 
-### 4. 跨设备连接配置
+### 5. 跨设备连接配置
 
 如果 Claude 和浏览器不在同一台设备上，需要配置端口转发：
 
